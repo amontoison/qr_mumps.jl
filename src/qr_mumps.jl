@@ -6,17 +6,14 @@ export QrmType,
        qrm_least_squares, qrm_least_squares!,
        qrm_pseti
 
-if isfile(joinpath(dirname(@__FILE__), "..", "deps", "deps.jl"))
-  include("../deps/deps.jl")
-else
-  error("QR_MUMPS library not properly installed. Please run Pkg.build(\"qr_mumps\")")
+if haskey(ENV, "JULIA_QR_MUMPS_LIBRARY_PATH")
+  ...
 end
 
 "Exception type raised in case of error."
 type QRMException <: Exception
   msg :: ASCIIString
 end
-
 
 type QrmType_Private
   irn :: Ptr{Cint}

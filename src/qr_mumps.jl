@@ -7,28 +7,15 @@ export QrmType,
        qrm_pseti
 
 if haskey(ENV, "JULIA_QR_MUMPS_LIBRARY_PATH")
-  ...
+  # ...
+else
+  using qr_mumps_jll  # WIP
 end
 
-"Exception type raised in case of error."
-type QRMException <: Exception
-  msg :: ASCIIString
-end
+include("wrapper/qr_mumps_common.jl")
+include("wrapper/qr_mumps_api.jl")
 
-type QrmType_Private
-  irn :: Ptr{Cint}
-  jcn :: Ptr{Cint}
-  val :: Ptr{Cdouble}
-  m   :: Cint
-  n   :: Cint
-  nz  :: Cint
-  cperm_in :: Ptr{Cint}
-  icntl :: Ptr{Cint}
-  rcntl :: Ptr{Cdouble}
-  gstats :: Ptr{Clong}
-  h   :: Cint
-
-  function QrmType_Private(irn :: Vector{Int}, jcn :: Vector{Int}, val :: Vector{Float64},
+function QrmType_Private(irn :: Vector{Int}, jcn :: Vector{Int}, val :: Vector{Float64},
                            m :: Int, n :: Int, nz :: Int)
     qrm_priv = new(C_NULL, C_NULL, C_NULL, 0, 0, 0, C_NULL, C_NULL, C_NULL, C_NULL, 0)
     ccall((:dqrm_spmat_init_c, libdqrm), Void, (Ptr{QrmType_Private},), &qrm_priv)
@@ -52,7 +39,7 @@ type QrmType
   jcn :: Vector{Cint}
   val :: Vector{Cdouble}
 
-  function QrmType(irn :: Vector{Int}, jcn :: Vector{Int}, val :: Vector{Float64},
+function QrmType(irn :: Vector{Int}, jcn :: Vector{Int}, val :: Vector{Float64},
                    m :: Int, n :: Int, nz :: Int)
 
     qrm_priv = QrmType_Private(irn, jcn, val, m, n, nz)

@@ -140,6 +140,14 @@ p = 5
       X = spfct \ B
       R = B - A * X
       @test norm(A' * R) ≤ tol
+
+      # spfct = qrm_analyse(Transpose(spmat))
+      # qrm_analyse!(Transpose(spmat), spfct)
+      # qrm_factorize!(Transpose(spmat), spfct)
+
+      # spfct = qrm_analyse(Adjoint(spmat))
+      # qrm_analyse!(Adjoint(spmat), spfct)
+      # qrm_factorize!(Adjoint(spmat), spfct)
     end
   end
 end
@@ -271,6 +279,14 @@ end
       X = spfct2 \ B
       R = B - A * X
       @test norm(R) ≤ tol
+
+      # spfct = qrm_analyse(Transpose(spmat))
+      # qrm_analyse!(Transpose(spmat), spfct)
+      # qrm_factorize!(Transpose(spmat), spfct)
+
+      # spfct = qrm_analyse(Adjoint(spmat))
+      # qrm_analyse!(Adjoint(spmat), spfct)
+      # qrm_factorize!(Adjoint(spmat), spfct)
     end
   end
 end
@@ -426,9 +442,15 @@ end
 
 @testset "Auxiliary functions" begin
   for str ∈ QRMumps.GICNTL ∪ QRMumps.PICNTL ∪ QRMumps.RCNTL
-    qrm_get(str)
     qrm_set(str, 1)
+    val = qrm_get(str)
+    if str ∉ ("qrm_ncpu", "qrm_ngpu")
+      @test val == 1
+    end
   end
+
+  status = QRMumps.error_handling(Int32(37))
+  @test status == "Matrix is indefinite."
 
   for T in (Float32, Float64, ComplexF32, ComplexF64)
     transp = (T <: Real) ? 't' : 'c'
@@ -437,9 +459,13 @@ end
     spfct = qrm_analyse(spmat)
     qrm_factorize!(spmat, spfct)
 
+    @test size(spmat) == size(A)
+    @test nnz(spmat) == nnz(A)
+
     for str ∈ QRMumps.PICNTL ∪ QRMumps.RCNTL
-      qrm_get(spfct, str)
       qrm_set(spfct, str, 1)
+      val = qrm_get(spfct, str)
+      @test val == 1
     end
 
     for str ∈ QRMumps.STATS
